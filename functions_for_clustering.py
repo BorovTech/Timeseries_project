@@ -40,6 +40,22 @@ def partition(dist, l, r, order):
             return right
 
         order[left], order[right] = order[right], order[left]
+        
+
+
+def detrend(data_matrix):
+    ans = []
+    for data_list in data_matrix:
+        series = pd.Series(data_list)
+        X = [i for i in range(0, len(series))]
+        X = np.reshape(X, (len(X), 1))
+        y = series.values
+        model = LinearRegression()
+        model.fit(X, y)
+        trend = model.predict(X)
+        detrended = [y[i]-trend[i] for i in range(0, len(series))]
+        ans.append(detrended)
+    return ans
 
         
 def nth_element(dist, order, k):
