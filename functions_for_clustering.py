@@ -5,6 +5,7 @@ from scipy.special import gamma
 from scipy.spatial.distance import pdist, squareform, euclidean
 import pandas as pd
 import seaborn as sns
+from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from random import randint
 
@@ -153,4 +154,11 @@ def generate_z_vector_best(arr, n):
         z_vector.append(index_element(arr, i, partition, "min"))
     return z_vector
 #я тут немного пошаманил и сделал дополнительную функцию чтобы наш говнокод выглядел хоть чуть-чуть получше
+
+def generate_motif(clustered_data):
+    motif = []
+    transposed_data = np.transpose(clustered_data)
+    for point in transposed_data:
+        motif.append(np.average(point))
     
+    return motif
