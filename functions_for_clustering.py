@@ -162,3 +162,31 @@ def generate_motif(clustered_data):
         motif.append(np.average(point))
     
     return motif
+
+def find_boundaries(visualization_data, visualization_data_flat, time_stamp):
+    distance = max(visualization_data_flat) - min(visualization_data_flat)
+    #distance2 = math.hypot(max(motif), min(motif))
+    #distance3 = abs(max(motif))*math.sqrt(1 + (min(motif)/max(motif))**2)
+    scale = np.arange(min(visualization_data_flat),max(visualization_data_flat), distance/100)
+
+    count_on_scale = [0]*len(scale)
+    for scale_range_index in range(len(scale)-1):
+        for time_series in visualization_data:
+            if scale[scale_range_index] < time_series[time_stamp] < scale[scale_range_index + 1]:
+                count_on_scale[scale_range_index] += 1
+
+    for i in range(len(count_on_scale)):
+        if count_on_scale[i] <= 0.65*max(count_on_scale):
+            count_on_scale[i] = 0
+
+    boundaries = []
+    index_max = count_on_scale.index(max(count_on_scale))
+    for i in range(index_max, 0, -1):
+        if count_on_scale[i] == 0:
+            boundaries.append(scale[i])
+            break
+    for i in range(index_max, len(count_on_scale)):
+        if count_on_scale[i] == 0:
+            boundaries.append(scale[i])
+            break
+    return boundaries
