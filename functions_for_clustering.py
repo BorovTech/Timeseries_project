@@ -163,17 +163,16 @@ def generate_motif(clustered_data):
     
     return motif
 
-def find_boundaries(visualization_data, visualization_data_flat, time_stamp):
-    distance = max(visualization_data_flat) - min(visualization_data_flat)
+def find_boundaries(visualization_data, vdf_min, vdf_max, time_stamp):
     #distance2 = math.hypot(max(motif), min(motif))
     #distance3 = abs(max(motif))*math.sqrt(1 + (min(motif)/max(motif))**2)
-    scale = np.arange(min(visualization_data_flat),max(visualization_data_flat), distance/100)
+    scale = np.arange(vdf_min, vdf_max, (vdf_max-vdf_min)/100) # divide the y-axis into 100 "cells"
 
     count_on_scale = [0]*len(scale)
-    for scale_range_index in range(len(scale)-1):
+    for sri in range(len(scale)-1): # sri = scale_range_index, here we insert in every cell the number of series passing through it
         for time_series in visualization_data:
-            if scale[scale_range_index] < time_series[time_stamp] < scale[scale_range_index + 1]:
-                count_on_scale[scale_range_index] += 1
+            if scale[sri] < time_series[time_stamp] < scale[sri + 1]:
+                count_on_scale[sri] += 1
 
     for i in range(len(count_on_scale)):
         if count_on_scale[i] <= 0.65*max(count_on_scale):
