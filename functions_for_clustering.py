@@ -58,6 +58,20 @@ def detrend(data_matrix):
         ans.append(detrended)
     return ans
 
+
+def detrend_flat(data_list):
+    ans = []
+    series = pd.Series(data_list)
+    X = [i for i in range(0, len(series))]
+    X = np.reshape(X, (len(X), 1))
+    y = series.values
+    model = LinearRegression()
+    model.fit(X, y)
+    trend = model.predict(X)
+    detrended = [y[i]-trend[i] for i in range(0, len(series))]
+    ans.append(detrended)
+    return ans
+
         
 def nth_element(dist, order, k):
     l = 0
