@@ -174,7 +174,6 @@ def generate_motif(clustered_data):
     transposed_data = np.transpose(clustered_data)
     for point in transposed_data:
         motif.append(np.average(point))
-    
     return motif
 
 def find_boundaries(visualization_data, vdf_min, vdf_max, time_stamp):
