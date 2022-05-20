@@ -1,10 +1,9 @@
 #!/bin/env bash
-
-#SBATCH --job-name="motif_gen1"
+#SBATCH --job-name="motifs_test_run_ckdtree_10_10"
+#SBATCH --time=0-30:00
+#SBATCH --gres=gpu:0
 #SBATCH --cpus-per-task=24
-#SBATCH --time=0-2:0
-#SBATCH --constraint="type_d"
-
+#SBATCH --constraint="type_b"
 
 module purge
 

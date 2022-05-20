@@ -2,6 +2,7 @@ from collections import defaultdict
 import numpy as np
 from itertools import product
 from scipy.special import gamma
+from scipy.spatial import cKDTree
 from scipy.spatial.distance import pdist, squareform, euclidean
 import pandas as pd
 import seaborn as sns
@@ -60,7 +61,6 @@ def detrend(data_matrix):
 
 
 def detrend_flat(data_list):
-    ans = []
     series = pd.Series(data_list)
     X = [i for i in range(0, len(series))]
     X = np.reshape(X, (len(X), 1))
@@ -69,8 +69,7 @@ def detrend_flat(data_list):
     model.fit(X, y)
     trend = model.predict(X)
     detrended = [y[i]-trend[i] for i in range(0, len(series))]
-    ans.append(detrended)
-    return ans
+    return detrended
 
         
 def nth_element(dist, order, k):
@@ -202,3 +201,133 @@ def find_boundaries(visualization_data, vdf_min, vdf_max, time_stamp):
             boundaries.append(scale[i])
             break
     return boundaries
+
+
+class Wishart:
+    clusters_to_objects: defaultdict
+    object_labels: np.ndarray
+    clusters: np.ndarray
+    kd_tree: cKDTree
+
+    def __init__(self, wishart_neighbors, significance_level):
+        self.wishart_neighbors = wishart_neighbors
+        self.significance_level = significance_level
+
+    def fit(self, X, workers=-1, batch_weight_in_gb=10):
+        self.kd_tree = cKDTree(data=X)
+
+        distances = np.empty(0).ravel()
+
+        batch_size = batch_weight_in_gb * (1024 ** 3) // 8
+        batches_count = X.shape[0] // (batch_size // (self.wishart_neighbors + 1))
+        if batches_count == 0:
+            batches_count = 1
+
+        batches = np.array_split(X, batches_count)
+        for batch in batches:
+            batch_dists, _ = self.kd_tree.query(x=batch, k=self.wishart_neighbors + 1, n_jobs=workers) 
+            # Changed in version 1.6.0: The “n_jobs” argument was renamed “workers”. The old name “n_jobs” is deprecated and will stop 
+            # working in SciPy 1.8.0
+            batch_dists = batch_dists[:, -1].ravel()
+            distances = np.hstack((distances, batch_dists))
+
+        indexes = np.argsort(distances)
+        X = X[indexes]
+
+        size, dim = X.shape
+
+        self.object_labels = np.zeros(size, dtype=int) - 1
+
+        # index in tuple
+        # min_dist, max_dist, flag_to_significant
+        self.clusters = np.array([(1., 1., 0)])
+        self.clusters_to_objects = defaultdict(list)
+
+        batches = np.array_split(X, batches_count)
+        idx_batches = np.array_split(indexes, batches_count)
+        del X, indexes
+
+        for batch, idx_batch in zip(batches, idx_batches):
+            _, neighbors = self.kd_tree.query(x=batch, k=self.wishart_neighbors + 1, n_jobs=workers)
+            neighbors = neighbors[:, 1:]
+
+            for real_index, idx in enumerate(idx_batch):
+                neighbors_clusters = np.concatenate(
+                    [self.object_labels[neighbors[real_index]], self.object_labels[neighbors[real_index]]])
+                unique_clusters = np.unique(neighbors_clusters).astype(int)
+                unique_clusters = unique_clusters[unique_clusters != -1]
+
+                if len(unique_clusters) == 0:
+                    self._create_new_cluster(idx, distances[idx])
+                else:
+                    max_cluster = unique_clusters[-1]
+                    min_cluster = unique_clusters[0]
+                    if max_cluster == min_cluster:
+                        if self.clusters[max_cluster][-1] < 0.5:
+                            self._add_elem_to_exist_cluster(idx, distances[idx], max_cluster)
+                        else:
+                            self._add_elem_to_noise(idx)
+                    else:
+                        my_clusters = self.clusters[unique_clusters]
+                        flags = my_clusters[:, -1]
+                        if np.min(flags) > 0.5:
+                            self._add_elem_to_noise(idx)
+                        else:
+                            significan = np.power(my_clusters[:, 0], -dim) - np.power(my_clusters[:, 1], -dim)
+                            significan *= self.wishart_neighbors
+                            significan /= size
+                            significan /= np.power(np.pi, dim / 2)
+                            significan *= gamma(dim / 2 + 1)
+                            significan_index = significan >= self.significance_level
+
+                            significan_clusters = unique_clusters[significan_index]
+                            not_significan_clusters = unique_clusters[~significan_index]
+                            significan_clusters_count = len(significan_clusters)
+                            if significan_clusters_count > 1 or min_cluster == 0:
+                                self._add_elem_to_noise(idx)
+                                self.clusters[significan_clusters, -1] = 1
+                                for not_sig_cluster in not_significan_clusters:
+                                    if not_sig_cluster == 0:
+                                        continue
+
+                                    for bad_index in self.clusters_to_objects[not_sig_cluster]:
+                                        self._add_elem_to_noise(bad_index)
+                                    self.clusters_to_objects[not_sig_cluster].clear()
+                            else:
+                                for cur_cluster in unique_clusters:
+                                    if cur_cluster == min_cluster:
+                                        continue
+
+                                    for bad_index in self.clusters_to_objects[cur_cluster]:
+                                        self._add_elem_to_exist_cluster(bad_index, distances[bad_index], min_cluster)
+                                    self.clusters_to_objects[cur_cluster].clear()
+
+                                self._add_elem_to_exist_cluster(idx, distances[idx], min_cluster)
+
+        return self.clean_data()
+
+    def clean_data(self):
+        unique = np.unique(self.object_labels)
+        index = np.argsort(unique)
+        if unique[0] != 0:
+            index += 1
+        true_cluster = {unq: index for unq, index in zip(unique, index)}
+        result = np.zeros(len(self.object_labels), dtype=int)
+        for index, unq in enumerate(self.object_labels):
+            result[index] = true_cluster[unq]
+        return result
+
+    def _add_elem_to_noise(self, index):
+        self.object_labels[index] = 0
+        self.clusters_to_objects[0].append(index)
+
+    def _create_new_cluster(self, index, dist):
+        self.object_labels[index] = len(self.clusters)
+        self.clusters_to_objects[len(self.clusters)].append(index)
+        self.clusters = np.append(self.clusters, [(dist, dist, 0)], axis=0)
+
+    def _add_elem_to_exist_cluster(self, index, dist, cluster_label):
+        self.object_labels[index] = cluster_label
+        self.clusters_to_objects[cluster_label].append(index)
+        self.clusters[cluster_label][0] = min(self.clusters[cluster_label][0], dist)
+        self.clusters[cluster_label][1] = max(self.clusters[cluster_label][1], dist)
