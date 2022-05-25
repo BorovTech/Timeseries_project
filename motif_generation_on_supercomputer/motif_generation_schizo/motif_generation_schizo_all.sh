@@ -33,16 +33,3 @@ sbatch motif_generation_schizo31.sh
 sbatch motif_generation_schizo32.sh
 sbatch motif_generation_schizo33.sh
 sbatch motif_generation_schizo34.sh
-sbatch motif_generation_schizo35.sh
-sbatch motif_generation_schizo36.sh
-sbatch motif_generation_schizo37.sh
-sbatch motif_generation_schizo38.sh
-sbatch motif_generation_schizo39.sh
-sbatch motif_generation_schizo40.sh
-sbatch motif_generation_schizo41.sh
-sbatch motif_generation_schizo42.sh
-sbatch motif_generation_schizo43.sh
-sbatch motif_generation_schizo44.sh
-sbatch motif_generation_schizo45.sh
-sbatch motif_generation_schizo46.sh
-sbatch motif_generation_schizo47.sh

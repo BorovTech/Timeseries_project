@@ -45,9 +45,8 @@ def motif_duckery(clustering_data, current_pattern):
         
         
 patterns_for_supercomp=[]
-fi = open("patterns/patterns_supercomp.txt", "r")
+fi = open("patterns/patterns_supercomp_7.txt", "r")
 for line in fi:
-    line = line[1 : -2]
     temp = list(map(int, line.split(", ")))
     patterns_for_supercomp.append(temp)
 fi.close()
@@ -59,7 +58,7 @@ for legend in range(0,20):
     df = pd.read_csv('data/train/part_%s.csv' % str(legend))
     #extracting data
     df_temp = df.drop(labels=['Ticker', 'index', 'Date'], axis=1)
-    key1 = -14 #the number of ticks we wish to observe - 1
+    key1 = -6 #the number of ticks we wish to observe - 1
     key2 = min([int(x) for x in df_temp.columns[1:]])
     df_temp = df_temp.drop(labels=[str(x) for x in list(range(key2,key1))], axis=1) #drop all ticks but those we're observing
     df_temp = df_temp.dropna(axis=0) #drop rows with nan
