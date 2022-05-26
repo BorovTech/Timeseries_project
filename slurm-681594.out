@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "motif_assesment.py", line 120, in <module>
+    current_assesment = motif_assesment(motif1)
+  File "motif_assesment.py", line 59, in motif_assesment
+    series = detrend(series)
+NameError: name 'detrend' is not defined
