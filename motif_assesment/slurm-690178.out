@@ -1,0 +1,4 @@
+  File "motif_assesment_1.py", line 125
+    fi.close()assesment_duckery(patterns_for_supercomp[1])
+              ^
+SyntaxError: invalid syntax

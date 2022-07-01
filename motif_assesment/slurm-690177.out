@@ -1,0 +1,2 @@
+  File "motif_assesment_1.py", line 56
+SyntaxError: Non-UTF-8 code starting with '\xed' in file motif_assesment_1.py on line 56, but no encoding declared; see http://python.org/dev/peps/pep-0263/ for details

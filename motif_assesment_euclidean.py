@@ -16,7 +16,7 @@ import threading
 def assesment_out(filename, assesment, code):
     ot_f = open(filename, code)
     ot_f.write('\n')
-    ot_f.write(', '.join(map(str, motif1['motif'])))
+    ot_f.write(', '.join(map(str, assesment['motif'])))
     ot_f.write('\n')
     ot_f.write('type_1_errors: ')
     ot_f.write(str(assesment['type_1_errors']))
@@ -52,13 +52,12 @@ def check_boundaries_euclidean(motif, series_window, EPS=0.05):
     return False
     
 def motif_assesment(motif1):
-    # motif1 = {'up': upper, 'motif': arr, 'low': lower}
 
     type_1_errors = 0 # найден мотив, а точки смены тренда нет
     type_2_errors = 0 # точке смены тренда не предшествовал мотив
     hits = 0
 
-    window_len = len(motif1['motif']) #m_len
+    window_len = len(motif1) #m_len
 
     for legend in range(6):
         df = pd.read_csv('data/test/part_%s.csv' % str(legend))
@@ -78,14 +77,14 @@ def motif_assesment(motif1):
                     window = series[transposition:transposition + window_len]
                     # мы приложили мотив к window начинающемуся с transposition, 
                     # теперь проходимся по точкам window и проверяем, попадают ли они под мотив
-                    if check_directions(motif1['motif'], window) and check_boundaries_euclidean(motif1['motif'], window):
+                    if check_directions(motif1, window) and check_boundaries_euclidean(motif1, window):
                         type_1_errors += 1
 
 
                 # type 2 
                 transposition = len(series) - window_len
                 window = series[transposition:transposition + window_len]
-                if check_directions(motif1['motif'], window) and check_boundaries_euclidean(motif1['motif'], window):
+                if check_directions(motif1, window) and check_boundaries_euclidean(motif1, window):
                     hits += 1
                 else:
                     type_2_errors += 1
@@ -100,11 +99,21 @@ def motif_assesment(motif1):
     assesment = {'type_1_errors':type_1_errors,
                 'type_2_errors':type_2_errors,
                 'hits':hits,
-                'ratio':ratio}
-    assesment_out('motifs_report_euc.txt', assesment, 'a')
+                'ratio':ratio,
+                'motif':motif1}
     
     return assesment
 
+
+def assesment_duckery(pattern):
+    f = open('thamotifs%s.txt' % ''.join(map(str, pattern)), 'r')
+    f.readline()
+    for line in f:
+        current_motif = list(map(float, line.split(", "))) # up - upper_boundary, low - lower_boundary
+        current_assesment = motif_assesment(current_motif)
+        assesment_out('motifs_report_euc%s.txt' % ''.join(map(str, pattern)), current_assesment, 'a')
+    f.close()
+    
 
 
 patterns_for_supercomp=[]
@@ -113,21 +122,7 @@ for line in fi:
     temp = list(map(int, line.split(", ")))
     patterns_for_supercomp.append(temp)
 fi.close()
-
-
-def assesment_duckery(pattern):
-    f = open('thamotifs%s.txt' % ''.join(map(str, pattern)), 'r')
-    f.readline()
-    for line in f:
-        current_motif = list(map(float, line.split(", ")))
-        margin = 0.012
-        upper = [margin + x for x in current_motif]
-        lower = [-margin + x for x in current_motif]
-        motif1 = {'up': upper, 'motif': current_motif, 'low': lower} # up - upper_boundary, low - lower_boundary
-        current_assesment = motif_assesment(motif1)
-    f.close()
-
-        
+     
 threads = [threading.Thread(target=assesment_duckery, args=[x]) for x in patterns_for_supercomp[:24]]
 
 for i in threads:

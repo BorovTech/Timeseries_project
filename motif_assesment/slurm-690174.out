@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "motif_assesment_0.py", line 126, in <module>
+    assesment_duckery(patterns_for_supercomp[0])
+  File "motif_assesment_0.py", line 109, in assesment_duckery
+    f = open('motifs/motifs_7_3/thamotifs%s.txt' % ''.join(map(str, pattern)), 'r')
+FileNotFoundError: [Errno 2] No such file or directory: 'motifs/motifs_7_3/thamotifs012.txt'

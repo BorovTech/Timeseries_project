@@ -1,0 +1,4 @@
+  File "motif_assesment_1.py", line 18
+    ot_f.write('
+               ^
+SyntaxError: EOL while scanning string literal
