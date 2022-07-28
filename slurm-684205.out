@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "motif_assesment_euclidean.py", line 130, in <module>
-    threads = [threading.Thread(target=assesment_duckery, args=[x]) for x in patterns_for_supercomp[:24]]
-  File "motif_assesment_euclidean.py", line 130, in <listcomp>
-    threads = [threading.Thread(target=assesment_duckery, args=[x]) for x in patterns_for_supercomp[:24]]
-NameError: name 'threading' is not defined
