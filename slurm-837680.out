@@ -1,0 +1,4 @@
+  File "Entropy_Complexity_length.py", line 5
+    %matplotlib inline
+    ^
+SyntaxError: invalid syntax
