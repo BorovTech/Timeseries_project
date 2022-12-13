@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Lorentz:
     def __init__(self, s = 10, r = 28, b = 8/3):
         self.s = s
