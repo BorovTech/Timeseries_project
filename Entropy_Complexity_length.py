@@ -21,7 +21,9 @@ def functions_testing(inp, checker):
     elif checker == 3:
         n = int(factorial(inp) * np.exp(inp))
         
-    
+    elif checker == 4:
+        n = 10 ** len(str(factorial(inp)))
+            
     return n
     
     
@@ -32,7 +34,6 @@ def plotting_test(s=2, inp=0, checker=0):
         M = 1
         min_ec, max_ec = get_borders(n=i, m=M)
         EC = entropy_complexity(noise, n=i, m=M)
-        print(EC)      
         f, ax = plt.subplots(1,1,figsize=(16, 7))
 
         ax.plot(max_ec[:,0], max_ec[:,1],color='r')
@@ -46,9 +47,9 @@ def plotting_test(s=2, inp=0, checker=0):
 
         ax.set_xlabel('entropy, $H$')
         ax.set_ylabel('complexity, $C$')
-        plt.title("Normalized Entropy-Complexity plane, N=%s" % (i), fontsize = 17)
+        plt.title("Entropy-Complexity plane, N=%s" % (i), fontsize = 17)
         ax.legend()
-        plt.savefig("Fig_%s" % (i-2))
+        plt.savefig("Odrer_plus_1_%s" % (i))
         
         
-plotting_test(11, 20, 1)
+plotting_test(14, 20, 4)

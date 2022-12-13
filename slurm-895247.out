@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "Entropy_Complexity_length.py", line 55, in <module>
+    plotting_test(14, 20, 4)
+  File "Entropy_Complexity_length.py", line 36, in plotting_test
+    EC = entropy_complexity(noise, n=i, m=M)
+  File "/home/smkulzhik/Entropy_Complexity/entropy_complexity.py", line 45, in entropy_complexity
+    pr = perm_distribution(arr, n, m)
+  File "/home/smkulzhik/Entropy_Complexity/entropy_complexity.py", line 14, in perm_distribution
+    pr[perm.tobytes()] = 1
+MemoryError
